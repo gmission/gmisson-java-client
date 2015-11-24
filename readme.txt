@@ -1,1 +1,1 @@
-this is an pure example of read text 
+The connection pto
