@@ -1,1 +1,1 @@
-The connection pto
+The basic connection interfaces are implemented.. The remaining work is to determine the interface function for randomly generating answers and implement it. 
