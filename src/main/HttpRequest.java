@@ -1,6 +1,11 @@
 package main;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,6 +17,9 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.stream.FileImageInputStream;
+
 import org.json.*;
 
 public class HttpRequest {
@@ -45,31 +53,34 @@ public class HttpRequest {
 	public JSONObject getUserDefinition(){
 		String strURL = " http://lccpu3.cse.ust.hk/gmission-dev/definitions/User";
 		String response = sendGet(strURL, null);
-		System.out.println(response);
 		return new JSONObject(response);
 	}
 	public JSONObject getHit(){
 		String strURL = "http://lccpu3.cse.ust.hk/gmission-dev/rest/hit";
 		String param = "q={\"filters\":[{\"name\":\"id\",\"op\":\"le\",\"val\":12}]}";
 		String response = sendGet(strURL, param);
-		System.out.println( response);
 		return new JSONObject(response);
 	}
 	public JSONObject getRestful(String identity, String filter){
 		String strURL = "http://lccpu3.cse.ust.hk/gmission-dev/rest/" + identity;
 		String response = sendGet(strURL, filter);
-		System.out.println( response);
+		System.out.println(response);
 		return new JSONObject(response);
 	}
 	public JSONObject postRestful(String identity, String param){
 		String strURL = "http://lccpu3.cse.ust.hk/gmission-dev/rest/" + identity;
-		System.out.println(strURL);
-		System.out.println(param);
 		String response = sendPost(strURL, param);
-		System.out.println( response);
 		return new JSONObject(response);
 	}
 	
+	public JSONObject postImage(String path) throws FileNotFoundException, IOException{
+		String strURL = "http://lccpu3.cse.ust.hk/gmission-dev/image/upload";
+		FileImageInputStream input = new FileImageInputStream(new File(path));
+		String param = "{\"file\":" +  input.toString() + "}";
+		System.out.println(input.toString());
+		String response = sendPost(strURL, param);
+		return new JSONObject(response);
+	}
 	
     public  String sendGet(String url, String param) {
     	if(token == null){
@@ -170,6 +181,106 @@ public class HttpRequest {
         return "error"; // 自定义错误信息  
     }   
     
+    
+    public String postFile( File file){
+    	String strURL = "http://lccpu3.cse.ust.hk/gmission-dev/image/upload";
+    	//obtain the byte array of the uploaded picture
+    	byte[] pixels = image2byte(file);
+    	
+    	//Static stuff
+    	String attachmentName = "file" ;
+    	String attachmentFileName = new String(file.getName());
+    	String crlf = "\r\n";
+    	String twoHyphens = "--";
+    	String boundary =  "*****";
+    	String response;
+    	//send the request
+    	try {  
+    		//Setup the request
+    		HttpURLConnection httpUrlConnection = null;
+        	URL url = new URL(strURL);
+        	httpUrlConnection = (HttpURLConnection) url.openConnection();
+        	httpUrlConnection.setUseCaches(false);
+        	httpUrlConnection.setDoOutput(true);       	 
+        	httpUrlConnection.setRequestMethod("POST");
+        	httpUrlConnection.setRequestProperty("Accept", "application/json"); // 设置接收数据的格式 
+        	if(token != null){ 
+       		 httpUrlConnection.setRequestProperty("Authorization", "gMission " + token); 
+            }
+        	httpUrlConnection.setRequestProperty("Connection", "Keep-Alive");
+        	httpUrlConnection.setRequestProperty("Cache-Control", "no-cache");
+        	httpUrlConnection.setRequestProperty(
+        	    "Content-Type", "multipart/form-data;boundary=" + boundary);
+        	//Start content wrapper:
+        	DataOutputStream request = new DataOutputStream(
+        		    httpUrlConnection.getOutputStream());
+
+        		request.writeBytes(twoHyphens + boundary + crlf);
+        		request.writeBytes("Content-Disposition: form-data; name=\"" +
+        		    attachmentName + "\";filename=\"" + 
+        		    attachmentFileName + "\"" + crlf);
+        		request.writeBytes(crlf);
+        		//End content wrapper:
+        		request.write(pixels);
+        		request.writeBytes(crlf);
+        		request.writeBytes(twoHyphens + boundary + 
+        		    twoHyphens + crlf);
+        		//Flush output buffer:
+        		request.flush();
+        		request.close();
+        		//Get response:
+        		InputStream responseStream = new 
+        			    BufferedInputStream(httpUrlConnection.getInputStream());
+
+        			BufferedReader responseStreamReader = 
+        			    new BufferedReader(new InputStreamReader(responseStream));
+
+        			String line = "";
+        			StringBuilder stringBuilder = new StringBuilder();
+
+        			while ((line = responseStreamReader.readLine()) != null) {
+        			    stringBuilder.append(line).append("\n");
+        			}
+        			responseStreamReader.close();
+
+        			 response = stringBuilder.toString();
+        			//Close response stream
+        			responseStream.close();
+        			//Close the connection:
+        			httpUrlConnection.disconnect();
+    	}catch (IOException e) {  
+            // TODO Auto-generated catch block  
+            e.printStackTrace();  
+            return "error";
+        }  
+
+    	return response; 
+    }
+    //把image转为byte array
+    public byte[] image2byte(File file){
+        byte[] data = null;
+        FileImageInputStream input = null;
+        try {
+ 
+          input = new FileImageInputStream(file);
+          ByteArrayOutputStream output = new ByteArrayOutputStream();
+          byte[] buf = new byte[1024];
+          int numBytesRead = 0;
+          while ((numBytesRead = input.read(buf)) != -1) {
+          output.write(buf, 0, numBytesRead);
+          }
+          data = output.toByteArray();
+          output.close();
+          input.close();
+        }
+        catch (FileNotFoundException ex1) {
+          ex1.printStackTrace();
+        }
+        catch (IOException ex1) {
+          ex1.printStackTrace();
+        }
+        return data;
+      }
     
     static String string2Json(String s) { 
         StringBuilder sb = new StringBuilder(s.length()+20); 
