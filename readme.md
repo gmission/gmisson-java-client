@@ -19,7 +19,7 @@ The demo enables the user to post two types of HITs in terms of the way of givin
 + **credit**: the reward for answering your HIT
 + **num_ans**: the targetted number of answers
 
-### HIT_TYPE_SELECTION
+#### HIT_TYPE_SELECTION
  You need to set `hit_type = HIT_TYPE_SELECTION`, which would allow to post a multi-choice HIT.There are some other parameters to be adjusted for this type of HIT:
  
  + **min_select_cnt**: the minimum number of selected choices for an answer.
@@ -28,7 +28,7 @@ The demo enables the user to post two types of HITs in terms of the way of givin
  
  Remark: `0 < min_select_cnt <= max_select_cnt <= choices.length`.  After this type of hit has been posted, a dialog will show up and ask you to input the brief for an answer. It is not necessary for you to post answers for that question, so if you don’t want to do so, just press the “cancel“ button, and the program would end with posting no answers. But if you type in some contents, then another dialog would show up for you to select a picture for that answer. Again if you don’t want to do so, just press “cancel” button, then an answer would not have a picture. But if you do select a picture, that picture would be uploaded and serve as the attachment of that answer. After that you would have successfully posted one answer for the hit posted in the beginning,then the program would continue to ask you for more answers until you press the “cancel“ button.
 
-### HIT_TYPE_TEXT
+#### HIT_TYPE_TEXT
 You need to set `hit_type = HIT_TYPE_TEXT`, which would allow to post a brief-answered HIT. 
 There is only one parameter to be set:
 
