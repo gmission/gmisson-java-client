@@ -34,36 +34,24 @@ public class Main {
 // parameters -----------------------------------------------------------------------------------------------------------------------------------
 			
 		//parameters of posting hits.
-		String hit_type = ANSWER_TYPE_TEXT;
+		String hit_type = HIT_TYPE_SELECTION;
 		String hit_title = "trial4";
 		String hit_intro = "Tested selection question.";
 		int credit = 10;
 		int num_ans = 5;
-		//for type SELECTION tasks
+		
+		//for type-SELECTION tasks
 		int min_select_cnt = 2;
 		int max_select_cnt = 3;
-		
-		if( hit_type != HIT_TYPE_SELECTION){
-			 min_select_cnt = 1;
-			 max_select_cnt = 1;
-		}
-		
-		//For multi-choice selection tasks
 		String[] choices = new String[]{"very good","good","soso","bad"};
-		ArrayList<Integer> choice_ids = new ArrayList<Integer>();
 		
-		//randomly pick a requester from the user list
-		int requester_id = randomAgent.getRandomUser();
-		//randomly pick a requester from the predefined location list
-	    int hit_location_id = randomAgent.getRandomLocation();
-	    
-		
-		//****** please customize this default directory of attachments for answers.****** 
+		//for type-TEXT tasks, please set the default directory of the pictures
 		String photo_directory = "/Users/robin/Desktop"; 
 		
-		//parameters of campaigns, name of a campaign should be unique.
+		//posting a campaign for the HIT is optional,and the name of a campaign should be unique.
 		Boolean postCam = false;
 		String cam_title = new Date().toString();
+		
 		
 		
 //posting campaigns-----------------------------------------------------------------------------------------------------------------------------------
@@ -76,6 +64,11 @@ public class Main {
 		}
 
 //posting tasks---------------------------------------------------------------------------------------------------------------------------------------
+		//randomly pick a requester from the user list
+		int requester_id = randomAgent.getRandomUser();
+		
+		//randomly pick a requester from the predefined location list
+		int hit_location_id = randomAgent.getRandomLocation();
 		
 		//transform the parameters into json format
 		JSONObject hit_param  = new JSONObject().append("title", hit_title).append("type", hit_type).append("description", hit_intro).append("credit", credit)
@@ -92,13 +85,15 @@ public class Main {
 		int hit_id = hit.getInt("id");
 		
 		//post choices for selection tasks
-		for(int i = 0 ; i < choices.length; i++){
-			String chooice_param = new JSONObject().append("hit_id", hit_id).append("brief", choices[i]).toString();
-			JSONObject choice = httpAgent.postRestful("selection", chooice_param);
-			choice_ids.add(choice.getInt("id"));
-			System.out.println("Choice posted: " + choice );
+		ArrayList<Integer> choice_ids = new ArrayList<Integer>();
+		if(hit_type == HIT_TYPE_SELECTION){
+			for(int i = 0 ; i < choices.length; i++){
+				String chooice_param = new JSONObject().append("hit_id", hit_id).append("brief", choices[i]).toString();
+				JSONObject choice = httpAgent.postRestful("selection", chooice_param);
+				choice_ids.add(choice.getInt("id"));
+				System.out.println("Choice posted: " + choice );
+			}
 		}
-			
 
 //posting answers---------------------------------------------------------------------------------------------------------------------------------------
 		

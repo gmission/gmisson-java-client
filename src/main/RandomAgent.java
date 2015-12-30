@@ -7,12 +7,6 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/*
- If it is the first time for you to invoke this program, please set isPosred = false, and adapt the parameters for users and locations'
- parameters for your preference in the construction function.
- Otherwise, please set isPosred=true and manually set the start-to-end id in the private fields: uid_start uid_end lid_start lid_end
- */
-
 
 public class RandomAgent {
 	//list of registeres users(serve as requesters and workers)
