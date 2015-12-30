@@ -15,7 +15,7 @@ public class FileAgent{
             @Override
             public void run() {
                 JFileChooser fc = new JFileChooser(directoy);
-                int result = fc.showDialog(null, "pick na image");
+                int result = fc.showDialog(null, "pick an image");
                 if(result == JFileChooser.APPROVE_OPTION){
                 	path = fc.getSelectedFile().getPath();
                 }

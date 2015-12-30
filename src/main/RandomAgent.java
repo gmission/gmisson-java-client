@@ -1,5 +1,6 @@
 package main;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -22,28 +23,47 @@ public class RandomAgent {
 	private HttpRequest httpAgent = null;
 	
 	
-	private Boolean isPosted = true;
-	
-	//if already posted
-	private int uid_start = 4;
-	private int uid_end = 9;
-	
-	private int lid_start = 13;
-	private int lid_end = 18;
-	
 public RandomAgent(HttpRequest agent){
 	  HttpRequest httpAgent = agent;
-	  if(isPosted){
+	  File usr_file = new File("user.txt");
+	  File loca_file = new File("location.txt");
+	  if(usr_file.exists()){
 		   //If already posted 
-		   for(int i = uid_start; i <= uid_end ; i++){
-				users_id.add(i);		
-		  }
-		  
-		  for(int i = lid_start; i <= lid_end ; i++){
-				locations_id.add(i);		
-		  }
+		  try {
+			     //read users' ids
+				 FileReader reader = new FileReader(usr_file);
+				 char[] temp = new char[10000];  
+				 reader.read(temp); 
+				 reader.close();
+				 String temp2 = new String(temp);
+				 String[] chars = temp2.split(" ");
+				 //the last character in chars is ""(empty)
+				 for(int i = 0; i < chars.length - 1; i++){
+						users_id.add(Integer.parseInt(chars[i]));		
+						
+				  }
+				//read locations' ids
+				 temp = new char[10000];  
+				 reader = new FileReader(loca_file);
+				 reader.read(temp); 
+				 reader.close();
+				  temp2 = new String(temp);
+				  chars = temp2.split(" ");
+				  for(int i = 0; i < chars.length - 1 ; i++){
+						locations_id.add(Integer.parseInt(chars[i]));		
+				  }
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	  }
 	  else{
+			  try {
+					usr_file.createNewFile();
+					loca_file.createNewFile();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		  
 		  ArrayList<String> locations = new ArrayList<String>();
 		  ArrayList<String> users = new ArrayList<String>();
 	//******set the parameters of posted locations here********
@@ -56,27 +76,43 @@ public RandomAgent(HttpRequest agent){
 		  locations.add( "{\"name\":\"UG Hall\",\"coordinate\":{\"longitude\":\"114.2500\",\"latitude\":\"22.3333\",\"altitude\":\"0.0\"}}");
 		  locations.add( "{\"name\":\"LSK Business Building\",\"coordinate\":{\"longitude\":\"114.2500\",\"latitude\":\"22.3167\",\"altitude\":\"0.0\"}}");
 	//******set the parameters of posted users here********
-		  users.add("{ \"username\": \"Jacby\",\"password\": \"Jacby\",\"email\":\"Jacby@gmail.com\" }");
-		  users.add("{ \"username\": \"Tomy\",\"password\": \"Tomy\",\"email\":\"Tomym@gmail.com\" }");
-		  users.add("{ \"username\": \"Edwardy\",\"password\": \"Edwardy\",\"email\":\"Edwardy@gmail.com\" }");
-		  users.add("{ \"username\": \"Benny\",\"password\": \"Benny\",\"email\":\"Benny@gmail.com\" }");
-		  users.add("{ \"username\": \"Joey\",\"password\": \"Joey\",\"email\":\"Joey@gmail.com\" }");
-		  users.add("{ \"username\": \"Lucas\",\"password\": \"Lucas\",\"email\":\"Lucas@gmail.com\" }");
+		  users.add("{ \"username\": \"user1\",\"password\": \"user1\",\"email\":\"user1@gmail.com\" }");
+		  users.add("{ \"username\": \"user2\",\"password\": \"user2\",\"email\":\"user2@gmail.com\" }");
+		  users.add("{ \"username\": \"user3\",\"password\": \"user3\",\"email\":\"user3@gmail.com\" }");
+		  users.add("{ \"username\": \"user4\",\"password\": \"user4\",\"email\":\"user4@gmail.com\" }");
+		  users.add("{ \"username\": \"user5\",\"password\": \"user5\",\"email\":\"user5@gmail.com\" }");
+		  users.add("{ \"username\": \"user6\",\"password\": \"user6\",\"email\":\"user6@gmail.com\" }");
 		  
 		  //posting users and get ids
 		  String url = "http://lccpu3.cse.ust.hk/gmission-dev/user/register" ;
-		  for(int i = uid_start; i < users.size(); i++){
-				JSONObject obj = new JSONObject(httpAgent.sendPost(url, users.get(i)));
-				users_id.add(obj.getInt("id"));		
-		  }
+		  try {
+			  FileWriter writer = new FileWriter(usr_file);
+			  for(int i = 0; i < users.size(); i++){
+					JSONObject obj = new JSONObject(httpAgent.sendPost(url, users.get(i)));
+					users_id.add(obj.getInt("id"));		
+					writer.write(obj.getInt("id") + " ");
+			  }
+			  writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		  
-		  System.out.println("users' id start from " + users_id.get(0) + " to " +  users_id.get(users_id.size()-1));
+		
 		  //posting locations and get ids
-		  for(int i = 0; i < locations.size(); i++){
-				JSONObject obj = httpAgent.postRestful("location",locations.get(i));
-				locations_id.add(obj.getInt("id"));		
-		  }
-		  System.out.println("locations' id start from " + locations_id.get(0) + " to " +  locations_id.get(users_id.size()-1));
+		  try {
+			  FileWriter writer = new FileWriter(loca_file);
+			  for(int i = 0; i < locations.size(); i++){
+					JSONObject obj = httpAgent.postRestful("location",locations.get(i));
+					locations_id.add(obj.getInt("id"));	
+					writer.write(obj.getInt("id") + " ");
+			  }		  
+			  writer.close();
+			
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	  }
 
 }
